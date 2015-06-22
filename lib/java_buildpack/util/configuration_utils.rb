@@ -34,7 +34,7 @@ module JavaBuildpack
         # exist, returns an empty hash. Overlays configuration in a matching environment variable, on top of the loaded
         # configuration, if present. Will not add a new configuration key where an existing one does not exist.
         #
-        # @param [String] identifier the identifier of the configuration
+        # @param [String] identifier the identifier of the configuration to load
         # @param [Boolean] should_log whether the contents of the configuration file should be logged.  This value
         #                             should be left to its default and exists to allow the logger to use the utility.
         # @return [Hash] the configuration or an empty hash if the configuration file does not exist
@@ -49,6 +49,18 @@ module JavaBuildpack
           end
 
           configuration || {}
+        end
+
+        # Write a new configuration file to the buildpack configuration directory. Any existing file will be replaced.
+        #
+        # @param [String] identifier the identifier of the configuration to write
+        # @param [Boolean] should_log whether the contents of the configuration file should be logged.  This value
+        #                             should be left to its default and exists to allow the logger to use the utility.
+        def write(identifier, new_content, should_log = true)
+          file = CONFIG_DIRECTORY + "#{identifier}.yml"
+          file.delete if file.exist?
+          logger.debug { "Writing configuration file #{file}" } if should_log
+          File.open(file, 'w') { |f| YAML.dump(new_content, f) }
         end
 
         private
